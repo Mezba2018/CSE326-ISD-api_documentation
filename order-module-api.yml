@@ -1,246 +1,102 @@
 openapi: 3.0.3
 info:
-  title: eBay Marketplace — Full Feature API
-  description: |
-    ## eBay Marketplace API Documentation
-
-    Complete REST API specification covering all features derived from the system
-    sequence diagrams for the eBay-like marketplace platform.
-
-    ### Modules Covered
-    | # | Module | Description |
-    |---|--------|-------------|
-    | 1 | **Search & Browse** | Product search, item details, images |
-    | 2 | **Buy It Now** | Direct purchase flow |
-    | 3 | **Auction / Bidding** | Bid placement, auction lifecycle |
-    | 4 | **Make Offer** | Buyer–Seller negotiation |
-    | 5 | **Payment & Refund** | Payment processing & refund handling |
-    | 6 | **Return Requests** | Buyer returns, seller review |
-    | 7 | **Add Item (Seller)** | Listing creation (BuyItNow / Auction / Classified) |
-    | 8 | **Selling Product** | Order & offer management, shipment |
-    | 9 | **Product Promotion** | Paid promotion & classified ads |
-
-    ### Username Replacement Policy (Effective Sep 26, 2025)
-    For U.S. users, all username fields (`username`, `buyerLoginName`, `sellerLoginName`,
-    `payer`, `payee`, etc.) now return an **immutable user ID** instead of the private
-    username. APIs accept both username and userID values in requests.
-
+  title: eBay Marketplace API
   version: 1.0.0
-  contact:
-    name: eBay Developer Support
-    url: https://developer.ebay.com/support
-
 servers:
-  - url: https://api.ebay.com
-    description: Production
-  - url: https://api.sandbox.ebay.com
-    description: Sandbox
-
+- url: https://api.ebay.com
+- url: https://api.sandbox.ebay.com
 tags:
-  # --- Search & Browse ---
-  - name: Search & Browse
-    description: |
-      **Sequence Diagram 1 — Search Product Scenario**
-      Participants: Buyer → eBayUI → Catalog → ProductDB → ImageService
-  # --- Buy It Now ---
-  - name: Buy It Now
-    description: |
-      **Sequence Diagram 2 — Buy It Now Scenario**
-      Participants: Buyer → BuyItNow UI → BuyingProductController → Inventory → Order → Payment → PaymentUI
-  # --- Auction ---
-  - name: Auction
-    description: |
-      **Sequence Diagram 3 — Buy by Auction Scenario**
-      Participants: Buyer → itemUI → itemController → item → bidder → endAuction → sellerUI → Seller
-  # --- Make Offer ---
-  - name: Make Offer
-    description: |
-      **Sequence Diagram 4 — Make Offer Scenario**
-      Participants: Buyer → itemUI → itemController → item → cart → offerUI → Seller
-  # --- Payment ---
-  - name: Payment
-    description: |
-      **Sequence Diagram 5 — Payment / Refund Scenario**
-      Participants: Buyer → PaymentUI → Control → Payment Gateway → PaymentDB
-  # --- Returns ---
-  - name: Returns
-    description: |
-      **Sequence Diagram 6 — Return Request Scenario**
-      Participants: Buyer → SubmitReturnRequestUI → ReviewUI → Controller → ReturnRequests → ApprovedReq → DeclinedReq → PaidAmount → Seller
-  # --- Add Item ---
-  - name: Add Item
-    description: |
-      **Sequence Diagram 7 — Add Item Scenario**
-      Participants: Seller → SellerUI → Controller → BuyItNowItems / AuctionItems / ClassifiedAds → Products
-  # --- Selling Product ---
-  - name: Selling Product
-    description: |
-      **Sequence Diagram 8 — Selling Product Scenario**
-      Participants: Seller → SellerUI → Controller → Orders → Offers → Customer → Inventory → DeliveryAgency
-  # --- Promotion ---
-  - name: Promotion
-    description: |
-      **Sequence Diagram 9 — Product Promotion Scenario**
-      Participants: Seller → SellerUI → Controller → Product → Payment → BuyerUI → Buyer
-
+- name: Browse & Search
+- name: Checkout & Orders (Buyer)
+- name: Auctions
+- name: Offers & Negotiation
+- name: Payments & Refunds
+- name: Returns & Post-Order
+- name: Inventory Management
+- name: Order Fulfillment (Seller)
+- name: Promotions & Marketing
+- name: Shipping & Logistics
+- name: Messaging
+- name: Classified Ads
 security:
-  - OAuth2:
-      - https://api.ebay.com/oauth/api_scope
-
-# ============================================================================
-# PATHS
-# ============================================================================
+- OAuth2:
+  - https://api.ebay.com/oauth/api_scope
 paths:
-
-  # ==========================================================================
-  #  1. SEARCH & BROWSE  (Diagram 1)
-  # ==========================================================================
-
   /buy/browse/v1/item_summary/search:
     get:
-      tags: [Search & Browse]
+      tags:
+      - Browse & Search
       summary: Search Items
       operationId: searchItems
-      description: |
-        **Diagram 1 — Search Phase**
-
-        `Buyer → UI: enterSearchQuery()` →
-        `UI → Catalog: searchItems(query)` →
-        `Catalog → ProductDB: fetchMatchingItems()` →
-        `ProductDB → Catalog: returnItemList()` →
-        `Catalog → UI: displaySearchResults()`
-
-        Searches the catalog for items matching the query string and returns a
-        paginated list of item summaries.
-
-        **Username Replacement:** The `seller.username` field in each result now
-        returns the immutable user ID for U.S. sellers.
       parameters:
-        - name: q
-          in: query
-          required: true
-          description: Search query keywords.
-          schema:
-            type: string
-          example: "iPhone 15 Pro"
-        - name: category_ids
-          in: query
-          description: Comma-separated category IDs to filter.
-          schema:
-            type: string
-        - name: filter
-          in: query
-          description: Additional filters (price, condition, location, etc.).
-          schema:
-            type: string
-        - name: sort
-          in: query
-          description: Sort order (e.g., `price`, `-price`, `newlyListed`).
-          schema:
-            type: string
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+        example: iPhone 15 Pro
+      - name: category_ids
+        in: query
+        schema:
+          type: string
+      - name: filter
+        in: query
+        schema:
+          type: string
+      - name: sort
+        in: query
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
       responses:
         '200':
-          description: Search results returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchPagedCollection'
+          description: HTTP 200 response
         '400':
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
   /buy/browse/v1/item/{itemId}:
     get:
-      tags: [Search & Browse]
+      tags:
+      - Browse & Search
       summary: Get Item Details
       operationId: getItemDetails
-      description: |
-        **Diagram 1 — View Item Details Phase**
-
-        `Buyer → UI: selectItem(itemId)` →
-        `UI → Catalog: getItemDetails(itemId)` →
-        `Catalog → ProductDB: fetchItemDetails()` →
-        `Catalog → ImageService: fetchItemImages()` →
-        `ImageService → Catalog: returnImages()` →
-        `Catalog → UI: showItemDetails()`
-
-        Returns full item details including images, seller info, price, and
-        condition.
-
-        **Username Replacement:** `seller.username` returns user ID for U.S. sellers.
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/ItemIdPath'
       responses:
         '200':
-          description: Item details returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Item'
+          description: HTTP 200 response
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
-  /buy/browse/v1/item/{itemId}/images:
-    get:
-      tags: [Search & Browse]
-      summary: Get Item Images
-      operationId: getItemImages
-      description: |
-        **Diagram 1 — ImageService interaction**
-
-        `Catalog → ImageService: fetchItemImages()` →
-        `ImageService → Catalog: returnImages()`
-
-        Returns all images associated with the given item.
-      parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
-      responses:
-        '200':
-          description: Item images returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  images:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Image'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  # ==========================================================================
-  #  2. BUY IT NOW  (Diagram 2)
-  # ==========================================================================
-
-  /buy/order/v1/buy_now:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /buy/order/v1/checkout_session/initiate:
     post:
-      tags: [Buy It Now]
-      summary: Buy It Now — Direct Purchase
-      operationId: buyNow
-      description: |
-        **Diagram 2 — Full Buy It Now Flow**
-
-        `Buyer → UI: clickBuyItNow()` →
-        `UI → Controller: buyNowRequest()` →
-        `Controller → Inventory: checkAvailability()` →
-        `Inventory → Controller: return availability` →
-        `Controller → Order: createOrder()` →
-        `Order → Controller: return order` →
-        `Controller → Payment: processPayment()` →
-        `Payment → PaymentUI: processPayment()` →
-        `PaymentUI → Payment: return payment status` →
-        `Payment → Controller: return payment confirmation` →
-        `Controller → UI: return confirmation` →
-        `UI → Buyer: display order confirmation`
-
-        Executes the full Buy It Now flow: checks inventory, creates
-        an order, processes payment, and returns the confirmation.
+      tags:
+      - Checkout & Orders (Buyer)
+      summary: Initiate Checkout Session
+      operationId: initiateCheckoutSession
       requestBody:
         required: true
         content:
@@ -249,102 +105,120 @@ paths:
               $ref: '#/components/schemas/BuyNowRequest'
       responses:
         '201':
-          description: Order created and payment processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuyNowResponse'
+          description: HTTP 201 response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: HTTP 409 response
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: HTTP 402 response
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /buy/order/v1/checkout_session/{checkoutSessionId}:
+    get:
+      tags:
+      - Checkout & Orders (Buyer)
+      summary: Get Checkout Session
+      operationId: getCheckoutSession
+      parameters:
+      - $ref: '#/components/parameters/CheckoutSessionIdPath'
+      responses:
+        '200':
+          description: HTTP 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSessionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /buy/order/v1/checkout_session/{checkoutSessionId}/place_order:
+    post:
+      tags:
+      - Checkout & Orders (Buyer)
+      summary: Place Order from Checkout Session
+      operationId: placeOrderFromCheckoutSession
+      parameters:
+      - $ref: '#/components/parameters/CheckoutSessionIdPath'
+      responses:
+        '201':
+          description: HTTP 201 response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BuyNowResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '409':
-          description: Item not available (inventory check failed).
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '402':
-          description: Payment processing failed.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /buy/order/v1/buy_now/{itemId}/check_availability:
-    get:
-      tags: [Buy It Now]
-      summary: Check Item Availability
-      operationId: checkAvailability
-      description: |
-        **Diagram 2 — Inventory check step**
-
-        `Controller → Inventory: checkAvailability()`
-
-        Verifies whether the item is currently in stock and purchasable.
-      parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
-      responses:
-        '200':
-          description: Availability status returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AvailabilityResponse'
         '404':
           $ref: '#/components/responses/NotFound'
-
-  # ==========================================================================
-  #  3. AUCTION / BIDDING  (Diagram 3)
-  # ==========================================================================
-
-  /buy/auction/v1/item/{itemId}:
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /buy/offer/v1_beta/bidding/{itemId}:
     get:
-      tags: [Auction]
-      summary: Get Auction Item Details
-      operationId: getAuctionItem
-      description: |
-        **Diagram 3 — Item Selection Phase**
-
-        `Buyer → UI: selectItem()` →
-        `UI → Controller: showSelectedItem()` →
-        `Controller → Item: getSelectedItem()` →
-        `Controller → Bidder: getSelectedItemBidder()`
-
-        Returns auction item details including current bids and bidder info.
+      tags:
+      - Auctions
+      summary: Get Bidding Item
+      operationId: getBiddingItem
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/ItemIdPath'
       responses:
         '200':
-          description: Auction item details returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuctionItem'
+          description: HTTP 200 response
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /buy/auction/v1/item/{itemId}/bid:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /buy/offer/v1_beta/bidding/{itemId}/place_proxy_bid:
     post:
-      tags: [Auction]
-      summary: Place Bid
-      operationId: placeBid
-      description: |
-        **Diagram 3 — Bidding Phase (loop: bid time not ended)**
-
-        `Buyer → UI: bidItem()` →
-        `UI → Controller: bidItem()` →
-        `Controller → Item: getBids()` →
-        `Item → Controller: return current bids` →
-        `Controller → Bidder: assignBidder()` →
-        `Bidder → Item: assignBidder()` →
-        `Item → Bidder: confirm assignment` →
-        `Controller → UI: bid confirmed`
-
-        Places a new bid on the auction item. Validates minimum bid increment
-        and assigns the bidder to the item.
+      tags:
+      - Auctions
+      summary: Place Proxy Bid
+      operationId: placeProxyBid
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/ItemIdPath'
       requestBody:
         required: true
         content:
@@ -353,109 +227,89 @@ paths:
               $ref: '#/components/schemas/PlaceBidRequest'
       responses:
         '200':
-          description: Bid placed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BidResponse'
+          description: HTTP 200 response
         '400':
-          description: Invalid bid (too low, auction ended, etc.).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+          description: HTTP 400 response
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /buy/auction/v1/item/{itemId}/bids:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /buy/offer/v1_beta/bidding/{itemId}/bids:
     get:
-      tags: [Auction]
-      summary: Get Current Bids
-      operationId: getBids
-      description: |
-        **Diagram 3 — `Controller → Item: getBids()`**
-
-        Returns the list of all current bids for the auction item.
+      tags:
+      - Auctions
+      summary: Get Bid History
+      operationId: getBidHistory
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+      - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
       responses:
         '200':
-          description: Bids list returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BidList'
-
-  /sell/auction/v1/item/{itemId}/end:
+          description: HTTP 200 response
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/inventory/v1/auction/{itemId}/end:
     post:
-      tags: [Auction]
-      summary: End Auction
-      operationId: endAuction
-      description: |
-        **Diagram 3 — Auction End Phase**
-
-        `UI → Controller: [end] triggerAuctionEnd()` →
-        `Controller → EndAuction: [end] getEndItem()` →
-        `EndAuction → EndAuction: [end] getMaxBidder()` →
-        `EndAuction → SellerUI: getWinner()` →
-        `SellerUI → Seller: second chance offering()` →
-        `Seller → SellerUI: response` →
-        `EndAuction → Controller: winner determined` →
-        `Controller → UI: inform winner()`
-
-        Ends the auction, determines the highest bidder (winner), notifies
-        the seller (with second-chance offering option), and returns the result.
+      tags:
+      - Auctions
+      summary: End Auction Listing
+      operationId: endAuctionListing
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/ItemIdPath'
       responses:
         '200':
-          description: Auction ended; winner determined.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuctionEndResponse'
+          description: HTTP 200 response
         '400':
-          description: Auction cannot be ended (already ended, no bids, etc.).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  /buy/auction/v1/item/{itemId}/winner:
-    get:
-      tags: [Auction]
-      summary: Get Auction Winner
-      operationId: getAuctionWinner
-      description: |
-        **Diagram 3 — `Buyer → UI: showWinner()`**
-
-        Returns the winner information for a completed auction.
-      parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
-      responses:
-        '200':
-          description: Winner details returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuctionWinner'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /sell/auction/v1/item/{itemId}/second_chance_offer:
+          description: HTTP 400 response
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/negotiation/v1/offer/{offerId}/send_second_chance_offer:
     post:
-      tags: [Auction]
+      tags:
+      - Auctions
       summary: Send Second Chance Offer
       operationId: sendSecondChanceOffer
-      description: |
-        **Diagram 3 — `SellerUI → Seller: second chance offering()`**
-
-        Allows the seller to send a second-chance offer to a non-winning bidder
-        after the auction ends.
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/ItemIdPath'
       requestBody:
         required: true
         content:
@@ -464,43 +318,29 @@ paths:
               $ref: '#/components/schemas/SecondChanceOfferRequest'
       responses:
         '201':
-          description: Second chance offer sent.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SecondChanceOfferResponse'
+          description: HTTP 201 response
         '400':
           $ref: '#/components/responses/BadRequest'
-
-  # ==========================================================================
-  #  4. MAKE OFFER  (Diagram 4)
-  # ==========================================================================
-
-  /buy/offer/v1/item/{itemId}/offer:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /buy/offer/v1_beta/offer/{itemId}/make_offer:
     post:
-      tags: [Make Offer]
-      summary: Make Offer on Item
+      tags:
+      - Offers & Negotiation
+      summary: Make Offer
       operationId: makeOffer
-      description: |
-        **Diagram 4 — Make Offer Phase**
-
-        `Buyer → UI: MakeOffer()` →
-        `UI → Controller: makeOffer()` →
-        `loop validOffer && count <= 5:`
-          `Controller → OfferUI: conveyOffer()` →
-          `OfferUI → Seller: accept/reject offer` →
-          `Seller → OfferUI: decision` →
-          `OfferUI → Controller: offer response`
-        `alt accepted:`
-          `Controller → Item: getItem()` →
-          `Controller → Cart: addItem()`
-        `Controller → UI: conveyMessage()`
-
-        Submits a price offer to the seller. The seller can accept or reject.
-        Up to 5 rounds of negotiation are supported. If accepted, the item
-        is added to the buyer's cart.
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/ItemIdPath'
       requestBody:
         required: true
         content:
@@ -509,34 +349,35 @@ paths:
               $ref: '#/components/schemas/MakeOfferRequest'
       responses:
         '201':
-          description: Offer submitted to seller.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OfferResponse'
+          description: HTTP 201 response
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /sell/offer/v1/offer/{offerId}/respond:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/negotiation/v1/offer/{offerId}/respond:
     post:
-      tags: [Make Offer]
-      summary: Respond to Buyer Offer (Seller)
+      tags:
+      - Offers & Negotiation
+      summary: Respond to Offer
       operationId: respondToOffer
-      description: |
-        **Diagram 4 — Seller decision step**
-
-        `OfferUI → Seller: accept offer / reject offer` →
-        `Seller → OfferUI: decision`
-
-        Seller accepts, rejects, or counter-offers the buyer's offer.
       parameters:
-        - name: offerId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: offerId
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         required: true
         content:
@@ -545,56 +386,58 @@ paths:
               $ref: '#/components/schemas/OfferDecisionRequest'
       responses:
         '200':
-          description: Offer response recorded.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OfferResponse'
+          description: HTTP 200 response
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /buy/offer/v1/item/{itemId}/offers:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /buy/offer/v1_beta/offer/{offerId}:
     get:
-      tags: [Make Offer]
-      summary: Get Offers for Item
-      operationId: getOffersForItem
-      description: Returns a list of all offers made on the item (visible to the seller).
+      tags:
+      - Offers & Negotiation
+      summary: Get Offer
+      operationId: getOffer
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+      - name: offerId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: Offers list returned.
+          description: HTTP 200 response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OfferList'
-
-  # ==========================================================================
-  #  5. PAYMENT & REFUND  (Diagram 5)
-  # ==========================================================================
-
-  /buy/payment/v1/pay:
+                $ref: '#/components/schemas/OfferResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /commerce/payment/v1/payment:
     post:
-      tags: [Payment]
-      summary: Process Payment
-      operationId: processPayment
-      description: |
-        **Diagram 5 — Payment Request**
-
-        `Buyer → UI: ClickPay()` →
-        `UI → Control: handlePay()` →
-        `Control → DB: entryPayment()` →
-        `Control → Gateway: Processpaymentpage()` →
-        `Gateway → Control: sendStatus()` →
-        `Control → DB: UpdatePaymentStatus()` →
-        `Control → UI: ShowPayment()`
-
-        Processes a payment for the given order. Records the payment in the
-        database, routes through the payment gateway, and updates status.
+      tags:
+      - Payments & Refunds
+      summary: Create Payment
+      operationId: createPayment
       requestBody:
         required: true
         content:
@@ -603,60 +446,62 @@ paths:
               $ref: '#/components/schemas/PaymentRequest'
       responses:
         '200':
-          description: Payment processed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaymentResponse'
+          description: HTTP 200 response
         '402':
-          description: Payment failed.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+          description: HTTP 402 response
         '400':
           $ref: '#/components/responses/BadRequest'
-
-  /buy/payment/v1/payment/{paymentId}:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /commerce/payment/v1/payment/{paymentId}:
     get:
-      tags: [Payment]
-      summary: Get Payment Details
-      operationId: getPaymentDetails
-      description: Returns the details and current status of a payment.
+      tags:
+      - Payments & Refunds
+      summary: Get Payment
+      operationId: getPayment
       parameters:
-        - name: paymentId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: Payment details returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaymentResponse'
+          description: HTTP 200 response
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /buy/payment/v1/refund:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /commerce/refund/v1/refund:
     post:
-      tags: [Payment]
-      summary: Request Refund
-      operationId: requestRefund
-      description: |
-        **Diagram 5 — Refund Process**
-
-        `Buyer → UI: requestRefund()` →
-        `UI → Control: initiateRefund()` →
-        `Control → DB: CheckRefund()` →
-        `DB → Control: refund info` →
-        `Control → Gateway: ProcessRefund()` →
-        `Gateway → Control: refundPayment()` →
-        `Control → UI: status update`
-
-        Initiates a refund for a previous payment. Validates the refund
-        eligibility, processes through the gateway, and updates status.
+      tags:
+      - Payments & Refunds
+      summary: Create Refund
+      operationId: createRefund
       requestBody:
         required: true
         content:
@@ -665,41 +510,33 @@ paths:
               $ref: '#/components/schemas/RefundRequest'
       responses:
         '200':
-          description: Refund processed.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefundResponse'
+          description: HTTP 200 response
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
-          description: Original payment not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  # ==========================================================================
-  #  6. RETURN REQUESTS  (Diagram 6)
-  # ==========================================================================
-
+          description: HTTP 404 response
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /post-order/v2/return:
     post:
-      tags: [Returns]
+      tags:
+      - Returns & Post-Order
       summary: Submit Return Request
       operationId: submitReturnRequest
-      description: |
-        **Diagram 6 — Buyer submits return request**
-
-        `Buyer → SubmitUI: Submit Return Request` →
-        `SubmitUI → Controller: Store Return Request` →
-        `Controller → ReturnReq: Store Return Request` →
-        `ReturnReq → Controller: request stored`
-
-        Submits a new return request for an order/item.
-
-        **Username Replacement:** `buyerLoginName` and `sellerLoginName` return
-        immutable user IDs for U.S. users.
       requestBody:
         required: true
         content:
@@ -708,108 +545,106 @@ paths:
               $ref: '#/components/schemas/CreateReturnRequest'
       responses:
         '201':
-          description: Return request created.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReturnRequest'
+          description: HTTP 201 response
         '400':
           $ref: '#/components/responses/BadRequest'
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /post-order/v2/return/search:
     get:
-      tags: [Returns]
+      tags:
+      - Returns & Post-Order
       summary: Search Return Requests
       operationId: searchReturnRequests
-      description: |
-        **Diagram 6 — Load return requests**
-
-        `Controller → ReturnReq: getReturnRequests` →
-        `Controller → ReviewUI: Load return requests`
-
-        Searches and lists return requests with optional filters.
       parameters:
-        - name: buyer_login_name
-          in: query
-          description: Filter by buyer login name or user ID.
-          schema:
-            type: string
-        - name: seller_login_name
-          in: query
-          description: Filter by seller login name or user ID.
-          schema:
-            type: string
-        - name: return_status
-          in: query
-          description: Filter by return status.
-          schema:
-            type: string
-            enum: [PENDING, APPROVED, DECLINED]
-        - name: order_id
-          in: query
-          schema:
-            type: string
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+      - name: buyer_login_name
+        in: query
+        schema:
+          type: string
+      - name: seller_login_name
+        in: query
+        schema:
+          type: string
+      - name: return_status
+        in: query
+        schema:
+          type: string
+          enum:
+          - PENDING
+          - APPROVED
+          - DECLINED
+      - name: order_id
+        in: query
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
       responses:
         '200':
-          description: Return requests list.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReturnRequestSearchResult'
-
+          description: HTTP 200 response
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /post-order/v2/return/{returnId}:
     get:
-      tags: [Returns]
+      tags:
+      - Returns & Post-Order
       summary: Get Return Request Details
       operationId: getReturnDetail
-      description: |
-        **Diagram 6 — Seller reviews request**
-
-        Returns full details of a return request including history and status.
-
-        **Username Replacement:** `buyerLoginName`, `sellerLoginName` return
-        user IDs for U.S. users.
       parameters:
-        - name: returnId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: returnId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: Return details returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReturnRequest'
+          description: HTTP 200 response
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /post-order/v2/return/{returnId}/approve:
     post:
-      tags: [Returns]
+      tags:
+      - Returns & Post-Order
       summary: Approve Return Request (Seller)
       operationId: approveReturnRequest
-      description: |
-        **Diagram 6 — Request Approved (alt)**
-
-        `Seller → ReviewUI: Approve Return Request` →
-        `ReviewUI → Controller: Store Approved Return Request` →
-        `Controller → ApprovedReq: Store Approved Return Request` →
-        `Controller: Send Approval Notification` →
-        `Controller → PaidAmount: Approve Refund` →
-        `PaidAmount → PaidAmount: Return Money` →
-        `Controller → Buyer: Return Request Accepted / Get Money`
-
-        Seller approves the return request. Triggers refund processing.
       parameters:
-        - name: returnId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: returnId
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         required: false
         content:
@@ -818,35 +653,33 @@ paths:
               $ref: '#/components/schemas/ReturnDecision'
       responses:
         '200':
-          description: Return approved; refund initiated.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReturnRequest'
+          description: HTTP 200 response
         '400':
           $ref: '#/components/responses/BadRequest'
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /post-order/v2/return/{returnId}/decline:
     post:
-      tags: [Returns]
+      tags:
+      - Returns & Post-Order
       summary: Decline Return Request (Seller)
       operationId: declineReturnRequest
-      description: |
-        **Diagram 6 — Request Declined (alt)**
-
-        `Seller → ReviewUI: Decline Return Request` →
-        `ReviewUI → Controller: Store Declined Return Request` →
-        `Controller → DeclinedReq: Store Declined Return Request` →
-        `Controller: Send Denial Notification` →
-        `Controller → Buyer: Return Request Declined`
-
-        Seller declines the return request with a reason.
       parameters:
-        - name: returnId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: returnId
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         required: true
         content:
@@ -855,40 +688,27 @@ paths:
               $ref: '#/components/schemas/ReturnDecision'
       responses:
         '200':
-          description: Return declined.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReturnRequest'
+          description: HTTP 200 response
         '400':
           $ref: '#/components/responses/BadRequest'
-
-  # ==========================================================================
-  #  7. ADD ITEM — SELLER  (Diagram 7)
-  # ==========================================================================
-
-  /sell/inventory/v1/item:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/inventory/v1/inventory_item:
     post:
-      tags: [Add Item]
-      summary: Add Item / Create Listing
-      operationId: addItem
-      description: |
-        **Diagram 7 — Seller adds item**
-
-        `Seller → UI: Add Item` →
-        `UI → Controller: addItem()` →
-        `alt Buy It Now selected:`
-          `Controller → BuyNow: [buyNow=true] Add item` →
-          `BuyNow → Products: Add to Products`
-        `alt Auction selected:`
-          `Controller → Auction: [auction=true] Add item` →
-          `Auction → Products: Add to Products`
-        `alt Classified ad selected:`
-          `Controller → Classified: [classified=true] Add item` →
-          `Classified → Products: Add to Products`
-
-        Creates a new listing. The selling format determines the item type
-        (Buy It Now, Auction, or Classified Ad).
+      tags:
+      - Inventory Management
+      summary: Create Inventory Item
+      operationId: createInventoryItem
       requestBody:
         required: true
         content:
@@ -897,324 +717,210 @@ paths:
               $ref: '#/components/schemas/AddItemRequest'
       responses:
         '201':
-          description: Item listed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddItemResponse'
+          description: HTTP 201 response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /sell/inventory/v1/inventory_item/{sku}:
+    get:
+      tags:
+      - Inventory Management
+      summary: Get Inventory Item
+      operationId: getInventoryItem
+      parameters:
+      - $ref: '#/components/parameters/SkuPath'
+      responses:
+        '200':
+          description: HTTP 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddItemResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+      - Inventory Management
+      summary: Update Inventory Item
+      operationId: updateInventoryItem
+      parameters:
+      - $ref: '#/components/parameters/SkuPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateItemRequest'
+      responses:
+        '200':
+          description: HTTP 200 response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AddItemResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
-  /sell/inventory/v1/item/{itemId}/discount:
-    post:
-      tags: [Add Item]
-      summary: Apply Discount to Item
-      operationId: applyDiscount
-      description: |
-        **Diagram 7 — Optional: Apply Discount**
-
-        `Seller → UI: Apply Discount` →
-        `UI → Controller: applyDiscount()` →
-        `Controller → Products: update price`
-
-        Applies a discount to an existing listing.
+    delete:
+      tags:
+      - Inventory Management
+      summary: Delete Inventory Item
+      operationId: deleteInventoryItem
       parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/SkuPath'
+      responses:
+        '200':
+          description: HTTP 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/fulfillment/v1/order:
+    get:
+      tags:
+      - Order Fulfillment (Seller)
+      summary: Get Orders
+      operationId: getOrders
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerOrderList'
+          description: HTTP 200 response
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/fulfillment/v1/order/{orderId}:
+    get:
+      tags:
+      - Order Fulfillment (Seller)
+      summary: Get Order
+      operationId: getOrder
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerOrder'
+          description: HTTP 200 response
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/fulfillment/v1/order/{orderId}/shipping_fulfillment:
+    post:
+      tags:
+      - Order Fulfillment (Seller)
+      summary: Create Shipping Fulfillment
+      operationId: createShippingFulfillment
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DiscountRequest'
+              $ref: '#/components/schemas/ShipmentUpdateRequest'
       responses:
         '200':
-          description: Discount applied.
+          description: HTTP 200 response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscountResponse'
+                $ref: '#/components/schemas/ShipmentUpdateResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-
-  /sell/inventory/v1/item/{itemId}/enable_offer:
-    post:
-      tags: [Add Item]
-      summary: Enable Make Offer on Item
-      operationId: enableMakeOffer
-      description: |
-        **Diagram 7 — Optional: Make Offer**
-
-        `Seller → UI: make offer` →
-        `UI → Controller: makeOffer()` →
-        `Controller → BuyNow: make offer` →
-        `BuyNow → Controller: offer enabled`
-
-        Enables the "Make Offer" feature on a Buy It Now listing.
-      parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                minimumOfferPrice:
-                  $ref: '#/components/schemas/Amount'
-                autoAcceptPrice:
-                  $ref: '#/components/schemas/Amount'
-                autoDeclinePrice:
-                  $ref: '#/components/schemas/Amount'
-      responses:
-        '200':
-          description: Make Offer enabled on this listing.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  itemId:
-                    type: string
-                  makeOfferEnabled:
-                    type: boolean
-                  message:
-                    type: string
-
-  # ==========================================================================
-  #  8. SELLING PRODUCT — ORDER & OFFER MGMT  (Diagram 8)
-  # ==========================================================================
-
-  /sell/fulfillment/v1/orders:
-    get:
-      tags: [Selling Product]
-      summary: Get Seller Orders
-      operationId: getSellerOrders
-      description: |
-        **Diagram 8 — Start Interface / View Orders**
-
-        `Seller → UI: StartInterface` →
-        `UI → Controller: startInterface()` →
-        `Controller → Orders: getOrders()` →
-        `Orders → Controller: order list`
-
-        and
-
-        `Seller → UI: Show Orders` →
-        `UI → Controller: showOrders()` →
-        `Controller → Orders: getOrderDetails()`
-
-        Retrieves all orders for the authenticated seller.
-
-        **Username Replacement:** `username`, `sellerId` return IDs for U.S. users.
-      parameters:
-        - name: filter
-          in: query
-          schema:
-            type: string
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
-      responses:
-        '200':
-          description: Seller orders returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SellerOrderList'
-
-  /sell/fulfillment/v1/orders/{orderId}:
-    get:
-      tags: [Selling Product]
-      summary: Get Order Details
-      operationId: getSellerOrderDetails
-      description: Returns full order details for a specific order.
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order details returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SellerOrder'
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /sell/offers/v1/offers:
-    get:
-      tags: [Selling Product]
-      summary: Get Seller Offers
-      operationId: getSellerOffers
-      description: |
-        **Diagram 8 — View Offers**
-
-        `Seller → UI: Show Offers` →
-        `UI → Controller: showOffers()` →
-        `Controller → Offers: getOfferDetails()` →
-        `Offers → Customer: getCustomerDetails()` →
-        `Customer → Offers: customer details`
-
-        Returns all offers received by the seller, including customer details.
-      parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [PENDING, ACCEPTED, REJECTED, EXPIRED, COUNTERED]
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
-      responses:
-        '200':
-          description: Offers list returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SellerOfferList'
-
-  /sell/offers/v1/offers/{offerId}/accept:
-    post:
-      tags: [Selling Product]
-      summary: Accept Offer & Process Shipment
-      operationId: acceptOffer
-      description: |
-        **Diagram 8 — Accept Offer**
-
-        `Seller → UI: Accept Offer` →
-        `UI → Controller: acceptOffer()` →
-        `Controller → Inventory: CheckInventory()` →
-        `alt Inventory available:` →
-          `Inventory: [inventory=true] processShipment` →
-          `Inventory → Delivery: productToDeliver` →
-        `alt Inventory unavailable:` →
-          `Inventory → Controller: insufficient inventory`
-
-        Accepts a buyer's offer and triggers shipment if inventory is available.
-      parameters:
-        - name: offerId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Offer accepted; shipment initiated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OfferAcceptanceResponse'
         '409':
-          description: Insufficient inventory.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /sell/offers/v1/offers/{offerId}/reject:
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/marketing/v1/ad/{itemId}/promote:
     post:
-      tags: [Selling Product]
-      summary: Reject Offer
-      operationId: rejectOffer
-      description: |
-        **Diagram 8 — Reject Offer**
-
-        `Seller → UI: Reject Offer` →
-        `UI → Controller: rejectOffer()` →
-        `Controller → Offers: update status`
-
-        Rejects a buyer's offer.
+      tags:
+      - Promotions & Marketing
+      summary: Create Promotion
+      operationId: createPromotion
       parameters:
-        - name: offerId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                reason:
-                  type: string
-                  description: Optional rejection reason.
-      responses:
-        '200':
-          description: Offer rejected.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OfferResponse'
-
-  /sell/fulfillment/v1/orders/{orderId}/accept:
-    post:
-      tags: [Selling Product]
-      summary: Accept Order & Process Shipment
-      operationId: acceptOrder
-      description: |
-        **Diagram 8 — Accept Order**
-
-        `Seller → UI: Accept Order` →
-        `UI → Controller: acceptOrder()` →
-        `Controller → Inventory: CheckInventory()` →
-        `alt Inventory available:` →
-          `Inventory → Delivery: productToDeliver`
-
-        Accepts the order and schedules delivery if inventory is available.
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order accepted; shipment scheduled.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderAcceptanceResponse'
-        '409':
-          description: Insufficient inventory.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  # ==========================================================================
-  #  9. PRODUCT PROMOTION  (Diagram 9)
-  # ==========================================================================
-
-  /sell/promotion/v1/item/{itemId}/promote:
-    post:
-      tags: [Promotion]
-      summary: Promote Product
-      operationId: promoteProduct
-      description: |
-        **Diagram 9 — Standard Promotion & Classified Ad**
-
-        `Seller → SellerUI: DoPromotion` →
-        `SellerUI → Controller: ShowProductDetails` →
-        `SellerUI → Payment: ProceedPayment` →
-        `Payment → Controller: DoPayment` →
-        `Controller → Payment: ProductDetails, Picture` →
-        `alt payment == true:` →
-          `Controller → Product: promoteProduct` →
-          `Controller → BuyerUI: ShowProduct` →
-          `BuyerUI → Buyer: display product`
-        `alt payment == false:` →
-          `Controller → SellerUI: promotion failed`
-
-        Promotes a product listing. Requires successful payment.
-        Successfully promoted products become visible to buyers with
-        enhanced placement.
-      parameters:
-        - $ref: '#/components/parameters/ItemIdPath'
+      - $ref: '#/components/parameters/ItemIdPath'
       requestBody:
         required: true
         content:
@@ -1223,48 +929,336 @@ paths:
               $ref: '#/components/schemas/PromotionRequest'
       responses:
         '201':
-          description: Product promoted successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PromotionResponse'
+          description: HTTP 201 response
         '402':
-          description: Promotion payment failed.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+          description: HTTP 402 response
         '400':
           $ref: '#/components/responses/BadRequest'
-
-  /sell/promotion/v1/products:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/marketing/v1/ad:
     get:
-      tags: [Promotion]
-      summary: Get Seller Products for Promotion
-      operationId: getSellerProductsForPromotion
-      description: |
-        **Diagram 9 — System initialization**
-
-        `Seller → Controller: loadProducts()` →
-        `Controller → Product: getProducts()`
-
-        Returns a list of the seller's products eligible for promotion.
+      tags:
+      - Promotions & Marketing
+      summary: Get Marketing Eligible Inventory
+      operationId: getMarketingEligibleInventory
       parameters:
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
       responses:
         '200':
-          description: Products list returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductList'
-
-# ============================================================================
-# COMPONENTS
-# ============================================================================
+          description: HTTP 200 response
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /commerce/shipping/v1/shipping_quote/{orderId}:
+    get:
+      tags:
+      - Shipping & Logistics
+      summary: Get Available Shipping Methods
+      operationId: getShippingMethods
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Available shipping methods
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingMethodsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /commerce/shipping/v1/shipping_label:
+    post:
+      tags:
+      - Shipping & Logistics
+      summary: Create Shipping Label
+      operationId: createShippingLabel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShippingLabelRequest'
+      responses:
+        '201':
+          description: Shipping label created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingLabelResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /commerce/shipping/v1/shipping_label/{labelId}:
+    get:
+      tags:
+      - Shipping & Logistics
+      summary: Get Shipping Label
+      operationId: getShippingLabel
+      parameters:
+      - name: labelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Shipping label details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingLabelResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /messaging/v1/conversation:
+    get:
+      tags:
+      - Messaging
+      summary: Get Conversations
+      operationId: getConversations
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /messaging/v1/conversation/{conversationId}:
+    get:
+      tags:
+      - Messaging
+      summary: Get Conversation Messages
+      operationId: getConversationMessages
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Conversation messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /messaging/v1/message:
+    post:
+      tags:
+      - Messaging
+      summary: Send Message
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/classified_ads/v1/classified_ad:
+    post:
+      tags:
+      - Classified Ads
+      summary: Create Classified Listing
+      operationId: createClassifiedListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClassifiedListingRequest'
+      responses:
+        '201':
+          description: Classified listing created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassifiedListingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+      - Classified Ads
+      summary: Get Seller Classified Listings
+      operationId: getSellerClassifiedListings
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Classified listings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassifiedListingListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/classified_ads/v1/classified_ad/{classifiedAdId}:
+    get:
+      tags:
+      - Classified Ads
+      summary: Get Classified Listing Details
+      operationId: getClassifiedListingDetails
+      parameters:
+      - name: classifiedAdId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Classified listing details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassifiedListingResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/classified_ads/v1/classified_ad/{classifiedAdId}/interested_buyers:
+    get:
+      tags:
+      - Classified Ads
+      summary: Get Interested Buyers
+      operationId: getInterestedBuyers
+      parameters:
+      - name: classifiedAdId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: List of buyers interested in classified ad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterestedBuyersResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /sell/classified_ads/v1/classified_ad/{classifiedAdId}/buyer_interest/{buyerId}:
+    post:
+      tags:
+      - Classified Ads
+      summary: Contact Interested Buyer
+      operationId: contactInterestedBuyer
+      parameters:
+      - name: classifiedAdId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: buyerId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactBuyerRequest'
+      responses:
+        '200':
+          description: Buyer contact initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
-
   securitySchemes:
     OAuth2:
       type: oauth2
@@ -1282,68 +1276,91 @@ components:
             https://api.ebay.com/oauth/api_scope/sell.fulfillment: Manage orders
             https://api.ebay.com/oauth/api_scope/sell.finances: Financial data
             https://api.ebay.com/oauth/api_scope/sell.marketing: Promotions
-
   parameters:
     ItemIdPath:
       name: itemId
       in: path
       required: true
-      description: Unique item identifier.
       schema:
         type: string
-      example: "v1|110512188501|0"
-
+      example: v1|110512188501|0
     Limit:
       name: limit
       in: query
-      description: Max results per page.
       schema:
         type: integer
         minimum: 1
         maximum: 200
         default: 50
-
     Offset:
       name: offset
       in: query
-      description: Number of results to skip.
       schema:
         type: integer
         minimum: 0
         default: 0
-
+    SkuPath:
+      name: sku
+      in: path
+      required: true
+      schema:
+        type: string
+    CheckoutSessionIdPath:
+      name: checkoutSessionId
+      in: path
+      required: true
+      schema:
+        type: string
   responses:
     BadRequest:
-      description: Bad Request.
+      description: Bad request
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     Unauthorized:
-      description: Unauthorized.
+      description: Authentication required
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     NotFound:
-      description: Not Found.
+      description: Resource not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     InternalServerError:
-      description: Internal Server Error.
+      description: Internal server error
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-
-  # ==========================================================================
-  # SCHEMAS
-  # ==========================================================================
+    Forbidden:
+      description: Access forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Resource state conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:
+      description: Service unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-
-    # --- Common ---
     ErrorResponse:
       type: object
       properties:
@@ -1358,7 +1375,10 @@ components:
                 type: string
               category:
                 type: string
-                enum: [APPLICATION, BUSINESS, REQUEST]
+                enum:
+                - APPLICATION
+                - BUSINESS
+                - REQUEST
               message:
                 type: string
               longMessage:
@@ -1372,17 +1392,15 @@ components:
                       type: string
                     value:
                       type: string
-
     Amount:
       type: object
       properties:
         value:
           type: string
-          example: "29.99"
+          example: '29.99'
         currency:
           type: string
-          example: "USD"
-
+          example: USD
     Image:
       type: object
       properties:
@@ -1393,31 +1411,24 @@ components:
           type: integer
         width:
           type: integer
-
     Seller:
       type: object
       properties:
         username:
           type: string
-          description: |
-            Seller's username **or** immutable user ID for U.S. sellers.
         userId:
           type: string
         feedbackPercentage:
           type: string
         feedbackScore:
           type: integer
-
     Buyer:
       type: object
       properties:
         username:
           type: string
-          description: |
-            Buyer's username **or** immutable user ID for U.S. buyers.
         userId:
           type: string
-
     PaginationInfo:
       type: object
       properties:
@@ -1433,13 +1444,8 @@ components:
           type: integer
         total:
           type: integer
-
-    # -----------------------------------------------------------------------
-    # 1. Search & Browse
-    # -----------------------------------------------------------------------
     ItemSummary:
       type: object
-      description: Summary of an item in search results.
       properties:
         itemId:
           type: string
@@ -1459,7 +1465,10 @@ components:
           type: array
           items:
             type: string
-            enum: [FIXED_PRICE, AUCTION, BEST_OFFER]
+            enum:
+            - FIXED_PRICE
+            - AUCTION
+            - BEST_OFFER
         categories:
           type: array
           items:
@@ -1469,20 +1478,17 @@ components:
                 type: string
               categoryName:
                 type: string
-
     SearchPagedCollection:
       allOf:
-        - $ref: '#/components/schemas/PaginationInfo'
-        - type: object
-          properties:
-            itemSummaries:
-              type: array
-              items:
-                $ref: '#/components/schemas/ItemSummary'
-
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          itemSummaries:
+            type: array
+            items:
+              $ref: '#/components/schemas/ItemSummary'
     Item:
       type: object
-      description: Full item details.
       properties:
         itemId:
           type: string
@@ -1508,7 +1514,10 @@ components:
           type: array
           items:
             type: string
-            enum: [FIXED_PRICE, AUCTION, BEST_OFFER]
+            enum:
+            - FIXED_PRICE
+            - AUCTION
+            - BEST_OFFER
         quantityAvailable:
           type: integer
         itemLocation:
@@ -1537,13 +1546,12 @@ components:
                 type: string
               categoryName:
                 type: string
-
-    # -----------------------------------------------------------------------
-    # 2. Buy It Now
-    # -----------------------------------------------------------------------
     BuyNowRequest:
       type: object
-      required: [itemId, quantity, paymentMethod]
+      required:
+      - itemId
+      - quantity
+      - paymentMethod
       properties:
         itemId:
           type: string
@@ -1553,14 +1561,15 @@ components:
           default: 1
         shippingAddressId:
           type: string
-          description: Pre-registered shipping address ID.
         paymentMethod:
           type: string
-          enum: [CREDIT_CARD, PAYPAL, APPLE_PAY, GOOGLE_PAY]
+          enum:
+          - CREDIT_CARD
+          - PAYPAL
+          - APPLE_PAY
+          - GOOGLE_PAY
         paymentAccountId:
           type: string
-          description: Payment account/instrument ID.
-
     BuyNowResponse:
       type: object
       properties:
@@ -1568,7 +1577,11 @@ components:
           type: string
         orderStatus:
           type: string
-          enum: [CREATED, PAYMENT_PENDING, PAYMENT_COMPLETED, CONFIRMED]
+          enum:
+          - CREATED
+          - PAYMENT_PENDING
+          - PAYMENT_COMPLETED
+          - CONFIRMED
         itemId:
           type: string
         quantity:
@@ -1577,7 +1590,10 @@ components:
           $ref: '#/components/schemas/Amount'
         paymentStatus:
           type: string
-          enum: [SUCCESS, PENDING, FAILED]
+          enum:
+          - SUCCESS
+          - PENDING
+          - FAILED
         paymentId:
           type: string
         createdAt:
@@ -1587,7 +1603,6 @@ components:
           $ref: '#/components/schemas/Buyer'
         seller:
           $ref: '#/components/schemas/Seller'
-
     AvailabilityResponse:
       type: object
       properties:
@@ -1597,10 +1612,6 @@ components:
           type: boolean
         quantityAvailable:
           type: integer
-
-    # -----------------------------------------------------------------------
-    # 3. Auction / Bidding
-    # -----------------------------------------------------------------------
     AuctionItem:
       type: object
       properties:
@@ -1632,20 +1643,21 @@ components:
           format: date-time
         auctionStatus:
           type: string
-          enum: [ACTIVE, ENDED, CANCELLED]
+          enum:
+          - ACTIVE
+          - ENDED
+          - CANCELLED
         minimumBidIncrement:
           $ref: '#/components/schemas/Amount'
-
     PlaceBidRequest:
       type: object
-      required: [bidAmount]
+      required:
+      - bidAmount
       properties:
         bidAmount:
           $ref: '#/components/schemas/Amount'
         maxAutoBidAmount:
           $ref: '#/components/schemas/Amount'
-          description: Optional proxy/auto-bid ceiling.
-
     BidResponse:
       type: object
       properties:
@@ -1657,7 +1669,10 @@ components:
           $ref: '#/components/schemas/Amount'
         bidStatus:
           type: string
-          enum: [WINNING, OUTBID, CONFIRMED]
+          enum:
+          - WINNING
+          - OUTBID
+          - CONFIRMED
         currentHighBid:
           $ref: '#/components/schemas/Amount'
         bidCount:
@@ -1665,17 +1680,15 @@ components:
         bidTime:
           type: string
           format: date-time
-
     BidList:
       allOf:
-        - $ref: '#/components/schemas/PaginationInfo'
-        - type: object
-          properties:
-            bids:
-              type: array
-              items:
-                $ref: '#/components/schemas/BidResponse'
-
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          bids:
+            type: array
+            items:
+              $ref: '#/components/schemas/BidResponse'
     AuctionEndResponse:
       type: object
       properties:
@@ -1683,7 +1696,8 @@ components:
           type: string
         auctionStatus:
           type: string
-          enum: [ENDED]
+          enum:
+          - ENDED
         winner:
           $ref: '#/components/schemas/AuctionWinner'
         totalBids:
@@ -1694,7 +1708,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Buyer'
-
     AuctionWinner:
       type: object
       properties:
@@ -1702,27 +1715,29 @@ components:
           type: string
         username:
           type: string
-          description: Username or user ID for U.S. users.
         winningBid:
           $ref: '#/components/schemas/Amount'
         wonAt:
           type: string
           format: date-time
-
     SecondChanceOfferRequest:
       type: object
-      required: [recipientUserId, offerPrice, duration]
+      required:
+      - recipientUserId
+      - offerPrice
+      - duration
       properties:
         recipientUserId:
           type: string
-          description: The user ID of the bidder to receive the second-chance offer.
         offerPrice:
           $ref: '#/components/schemas/Amount'
         duration:
           type: string
-          description: Duration the offer remains valid.
-          enum: [DAYS_1, DAYS_3, DAYS_5, DAYS_7]
-
+          enum:
+          - DAYS_1
+          - DAYS_3
+          - DAYS_5
+          - DAYS_7
     SecondChanceOfferResponse:
       type: object
       properties:
@@ -1739,39 +1754,39 @@ components:
           format: date-time
         status:
           type: string
-          enum: [SENT, ACCEPTED, DECLINED, EXPIRED]
-
-    # -----------------------------------------------------------------------
-    # 4. Make Offer
-    # -----------------------------------------------------------------------
+          enum:
+          - SENT
+          - ACCEPTED
+          - DECLINED
+          - EXPIRED
     MakeOfferRequest:
       type: object
-      required: [offerPrice]
+      required:
+      - offerPrice
       properties:
         offerPrice:
           $ref: '#/components/schemas/Amount'
         message:
           type: string
-          description: Optional message to the seller.
         quantity:
           type: integer
           minimum: 1
           default: 1
-
     OfferDecisionRequest:
       type: object
-      required: [action]
+      required:
+      - action
       properties:
         action:
           type: string
-          enum: [ACCEPT, REJECT, COUNTER]
+          enum:
+          - ACCEPT
+          - REJECT
+          - COUNTER
         counterOfferPrice:
           $ref: '#/components/schemas/Amount'
-          description: Required when action is COUNTER.
         message:
           type: string
-          description: Optional message to buyer.
-
     OfferResponse:
       type: object
       properties:
@@ -1783,19 +1798,22 @@ components:
           $ref: '#/components/schemas/Amount'
         status:
           type: string
-          enum: [PENDING, ACCEPTED, REJECTED, COUNTERED, EXPIRED]
+          enum:
+          - PENDING
+          - ACCEPTED
+          - REJECTED
+          - COUNTERED
+          - EXPIRED
         buyer:
           $ref: '#/components/schemas/Buyer'
         seller:
           $ref: '#/components/schemas/Seller'
         negotiationRound:
           type: integer
-          description: Current negotiation round (max 5).
         counterOfferPrice:
           $ref: '#/components/schemas/Amount'
         addedToCart:
           type: boolean
-          description: True if offer was accepted and item added to cart.
         message:
           type: string
         createdAt:
@@ -1804,34 +1822,36 @@ components:
         expiresAt:
           type: string
           format: date-time
-
     OfferList:
       allOf:
-        - $ref: '#/components/schemas/PaginationInfo'
-        - type: object
-          properties:
-            offers:
-              type: array
-              items:
-                $ref: '#/components/schemas/OfferResponse'
-
-    # -----------------------------------------------------------------------
-    # 5. Payment & Refund
-    # -----------------------------------------------------------------------
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          offers:
+            type: array
+            items:
+              $ref: '#/components/schemas/OfferResponse'
     PaymentRequest:
       type: object
-      required: [orderId, paymentMethod, amount]
+      required:
+      - orderId
+      - paymentMethod
+      - amount
       properties:
         orderId:
           type: string
         paymentMethod:
           type: string
-          enum: [CREDIT_CARD, PAYPAL, APPLE_PAY, GOOGLE_PAY, BANK_TRANSFER]
+          enum:
+          - CREDIT_CARD
+          - PAYPAL
+          - APPLE_PAY
+          - GOOGLE_PAY
+          - BANK_TRANSFER
         paymentAccountId:
           type: string
         amount:
           $ref: '#/components/schemas/Amount'
-
     PaymentResponse:
       type: object
       properties:
@@ -1845,7 +1865,11 @@ components:
           $ref: '#/components/schemas/Amount'
         status:
           type: string
-          enum: [SUCCESS, PENDING, FAILED, REFUNDED]
+          enum:
+          - SUCCESS
+          - PENDING
+          - FAILED
+          - REFUNDED
         gatewayTransactionId:
           type: string
         processedAt:
@@ -1853,14 +1877,13 @@ components:
           format: date-time
         payer:
           type: string
-          description: Payer username or user ID (U.S. users get user ID).
         payee:
           type: string
-          description: Payee username or user ID (U.S. users get user ID).
-
     RefundRequest:
       type: object
-      required: [paymentId, refundAmount]
+      required:
+      - paymentId
+      - refundAmount
       properties:
         paymentId:
           type: string
@@ -1870,13 +1893,11 @@ components:
           $ref: '#/components/schemas/Amount'
         reason:
           type: string
-          description: Reason for the refund.
           enum:
-            - ITEM_NOT_RECEIVED
-            - ITEM_NOT_AS_DESCRIBED
-            - BUYER_CANCEL
-            - OTHER
-
+          - ITEM_NOT_RECEIVED
+          - ITEM_NOT_AS_DESCRIBED
+          - BUYER_CANCEL
+          - OTHER
     RefundResponse:
       type: object
       properties:
@@ -1888,7 +1909,10 @@ components:
           $ref: '#/components/schemas/Amount'
         status:
           type: string
-          enum: [PENDING, SUCCESS, FAILED]
+          enum:
+          - PENDING
+          - SUCCESS
+          - FAILED
         gatewayRefundId:
           type: string
         processedAt:
@@ -1896,14 +1920,12 @@ components:
           format: date-time
         refundTo:
           type: string
-          description: Username or user ID receiving the refund (U.S. users get user ID).
-
-    # -----------------------------------------------------------------------
-    # 6. Return Requests
-    # -----------------------------------------------------------------------
     CreateReturnRequest:
       type: object
-      required: [orderId, itemId, returnReason]
+      required:
+      - orderId
+      - itemId
+      - returnReason
       properties:
         orderId:
           type: string
@@ -1912,16 +1934,14 @@ components:
         returnReason:
           type: string
           enum:
-            - ITEM_NOT_AS_DESCRIBED
-            - ITEM_DAMAGED
-            - WRONG_ITEM
-            - ITEM_NOT_RECEIVED
-            - CHANGED_MIND
-            - OTHER
+          - ITEM_NOT_AS_DESCRIBED
+          - ITEM_DAMAGED
+          - WRONG_ITEM
+          - ITEM_NOT_RECEIVED
+          - CHANGED_MIND
+          - OTHER
         comment:
           type: string
-          description: Additional details about the return.
-
     ReturnRequest:
       type: object
       properties:
@@ -1933,22 +1953,25 @@ components:
           type: string
         buyerLoginName:
           type: string
-          description: |
-            Buyer login name **or** immutable user ID for U.S. buyers.
         sellerLoginName:
           type: string
-          description: |
-            Seller login name **or** immutable user ID for U.S. sellers.
         returnReason:
           type: string
         comment:
           type: string
         status:
           type: string
-          enum: [PENDING, APPROVED, DECLINED]
+          enum:
+          - PENDING
+          - APPROVED
+          - DECLINED
         refundStatus:
           type: string
-          enum: [NOT_STARTED, PENDING, COMPLETED, FAILED]
+          enum:
+          - NOT_STARTED
+          - PENDING
+          - COMPLETED
+          - FAILED
         refundAmount:
           $ref: '#/components/schemas/Amount'
         declineReason:
@@ -1971,45 +1994,46 @@ components:
                 properties:
                   userId:
                     type: string
-                    description: User ID (immutable for U.S. users).
                   role:
                     type: string
-                    enum: [BUYER, SELLER, SYSTEM]
+                    enum:
+                    - BUYER
+                    - SELLER
+                    - SYSTEM
               timestamp:
                 type: string
                 format: date-time
               comment:
                 type: string
-
     ReturnDecision:
       type: object
       properties:
         reason:
           type: string
-          description: Reason for approval or decline.
         comment:
           type: string
-
     ReturnRequestSearchResult:
       allOf:
-        - $ref: '#/components/schemas/PaginationInfo'
-        - type: object
-          properties:
-            returns:
-              type: array
-              items:
-                $ref: '#/components/schemas/ReturnRequest'
-
-    # -----------------------------------------------------------------------
-    # 7. Add Item (Seller)
-    # -----------------------------------------------------------------------
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          returns:
+            type: array
+            items:
+              $ref: '#/components/schemas/ReturnRequest'
     AddItemRequest:
       type: object
-      required: [title, description, categoryId, price, sellingFormat, condition]
+      required:
+      - title
+      - description
+      - categoryId
+      - price
+      - sellingFormat
+      - condition
       properties:
         title:
           type: string
-          example: "Apple iPhone 15 Pro 256GB"
+          example: Apple iPhone 15 Pro 256GB
         description:
           type: string
         categoryId:
@@ -2018,15 +2042,19 @@ components:
           $ref: '#/components/schemas/Amount'
         sellingFormat:
           type: string
-          description: |
-            Determines the listing type:
-            - `BUY_IT_NOW` → fixed-price listing
-            - `AUCTION` → timed auction
-            - `CLASSIFIED_AD` → classified listing
-          enum: [BUY_IT_NOW, AUCTION, CLASSIFIED_AD]
+          enum:
+          - BUY_IT_NOW
+          - AUCTION
+          - CLASSIFIED_AD
         condition:
           type: string
-          enum: [NEW, LIKE_NEW, VERY_GOOD, GOOD, ACCEPTABLE, FOR_PARTS]
+          enum:
+          - NEW
+          - LIKE_NEW
+          - VERY_GOOD
+          - GOOD
+          - ACCEPTABLE
+          - FOR_PARTS
         quantity:
           type: integer
           minimum: 1
@@ -2038,21 +2066,21 @@ components:
             format: uri
         auctionStartPrice:
           $ref: '#/components/schemas/Amount'
-          description: Starting price (required for AUCTION format).
         auctionDuration:
           type: string
-          description: Auction duration (required for AUCTION format).
-          enum: [DAYS_1, DAYS_3, DAYS_5, DAYS_7, DAYS_10]
+          enum:
+          - DAYS_1
+          - DAYS_3
+          - DAYS_5
+          - DAYS_7
+          - DAYS_10
         reservePrice:
           $ref: '#/components/schemas/Amount'
-          description: Optional reserve price for auctions.
         buyItNowPrice:
           $ref: '#/components/schemas/Amount'
-          description: Optional Buy It Now price for auctions.
         makeOfferEnabled:
           type: boolean
           default: false
-          description: Whether to accept offers on BUY_IT_NOW listings.
         shippingOptions:
           type: array
           items:
@@ -2068,7 +2096,6 @@ components:
           type: string
         sku:
           type: string
-
     AddItemResponse:
       type: object
       properties:
@@ -2078,37 +2105,42 @@ components:
           type: string
         sellingFormat:
           type: string
-          enum: [BUY_IT_NOW, AUCTION, CLASSIFIED_AD]
+          enum:
+          - BUY_IT_NOW
+          - AUCTION
+          - CLASSIFIED_AD
         listingStatus:
           type: string
-          enum: [ACTIVE, PENDING, DRAFT]
+          enum:
+          - ACTIVE
+          - PENDING
+          - DRAFT
         listingUrl:
           type: string
           format: uri
         createdAt:
           type: string
           format: date-time
-
     DiscountRequest:
       type: object
-      required: [discountType]
+      required:
+      - discountType
       properties:
         discountType:
           type: string
-          enum: [PERCENTAGE, FIXED_AMOUNT]
+          enum:
+          - PERCENTAGE
+          - FIXED_AMOUNT
         discountValue:
           type: number
-          description: Percentage (0–100) or fixed amount.
         discountAmount:
           $ref: '#/components/schemas/Amount'
-          description: Computed discount amount.
         startDate:
           type: string
           format: date-time
         endDate:
           type: string
           format: date-time
-
     DiscountResponse:
       type: object
       properties:
@@ -2124,10 +2156,6 @@ components:
           type: number
         message:
           type: string
-
-    # -----------------------------------------------------------------------
-    # 8. Selling Product — Orders & Offers
-    # -----------------------------------------------------------------------
     SellerOrder:
       type: object
       properties:
@@ -2135,13 +2163,17 @@ components:
           type: string
         buyerUsername:
           type: string
-          description: Buyer username or user ID (U.S. users get user ID).
         sellerId:
           type: string
-          description: Seller username or user ID.
         orderStatus:
           type: string
-          enum: [PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED, RETURNED]
+          enum:
+          - PENDING
+          - CONFIRMED
+          - SHIPPED
+          - DELIVERED
+          - CANCELLED
+          - RETURNED
         totalAmount:
           $ref: '#/components/schemas/Amount'
         lineItems:
@@ -2195,17 +2227,15 @@ components:
         updatedAt:
           type: string
           format: date-time
-
     SellerOrderList:
       allOf:
-        - $ref: '#/components/schemas/PaginationInfo'
-        - type: object
-          properties:
-            orders:
-              type: array
-              items:
-                $ref: '#/components/schemas/SellerOrder'
-
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          orders:
+            type: array
+            items:
+              $ref: '#/components/schemas/SellerOrder'
     SellerOffer:
       type: object
       properties:
@@ -2219,7 +2249,12 @@ components:
           $ref: '#/components/schemas/Amount'
         status:
           type: string
-          enum: [PENDING, ACCEPTED, REJECTED, EXPIRED, COUNTERED]
+          enum:
+          - PENDING
+          - ACCEPTED
+          - REJECTED
+          - EXPIRED
+          - COUNTERED
         buyer:
           $ref: '#/components/schemas/Buyer'
         customerDetails:
@@ -2237,17 +2272,15 @@ components:
         expiresAt:
           type: string
           format: date-time
-
     SellerOfferList:
       allOf:
-        - $ref: '#/components/schemas/PaginationInfo'
-        - type: object
-          properties:
-            offers:
-              type: array
-              items:
-                $ref: '#/components/schemas/SellerOffer'
-
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          offers:
+            type: array
+            items:
+              $ref: '#/components/schemas/SellerOffer'
     OfferAcceptanceResponse:
       type: object
       properties:
@@ -2255,13 +2288,16 @@ components:
           type: string
         status:
           type: string
-          enum: [ACCEPTED]
+          enum:
+          - ACCEPTED
         orderId:
           type: string
-          description: The new order created from the accepted offer.
         shipmentStatus:
           type: string
-          enum: [SCHEDULED, PENDING_INVENTORY, FAILED]
+          enum:
+          - SCHEDULED
+          - PENDING_INVENTORY
+          - FAILED
         deliveryAgency:
           type: string
         estimatedDeliveryDate:
@@ -2269,7 +2305,6 @@ components:
           format: date-time
         message:
           type: string
-
     OrderAcceptanceResponse:
       type: object
       properties:
@@ -2277,10 +2312,15 @@ components:
           type: string
         status:
           type: string
-          enum: [CONFIRMED, SHIPPED]
+          enum:
+          - CONFIRMED
+          - SHIPPED
         shipmentStatus:
           type: string
-          enum: [SCHEDULED, PENDING_INVENTORY, FAILED]
+          enum:
+          - SCHEDULED
+          - PENDING_INVENTORY
+          - FAILED
         trackingNumber:
           type: string
         carrier:
@@ -2290,29 +2330,35 @@ components:
           format: date-time
         message:
           type: string
-
-    # -----------------------------------------------------------------------
-    # 9. Product Promotion
-    # -----------------------------------------------------------------------
     PromotionRequest:
       type: object
-      required: [promotionType, paymentMethod]
+      required:
+      - promotionType
+      - paymentMethod
       properties:
         promotionType:
           type: string
-          enum: [STANDARD, CLASSIFIED_AD, FEATURED, BOLD_TITLE]
-          description: Type of promotion to apply.
+          enum:
+          - STANDARD
+          - CLASSIFIED_AD
+          - FEATURED
+          - BOLD_TITLE
         promotionDuration:
           type: string
-          enum: [DAYS_7, DAYS_14, DAYS_30]
+          enum:
+          - DAYS_7
+          - DAYS_14
+          - DAYS_30
         paymentMethod:
           type: string
-          enum: [CREDIT_CARD, PAYPAL, WALLET_BALANCE]
+          enum:
+          - CREDIT_CARD
+          - PAYPAL
+          - WALLET_BALANCE
         paymentAccountId:
           type: string
         promotionBudget:
           $ref: '#/components/schemas/Amount'
-
     PromotionResponse:
       type: object
       properties:
@@ -2324,10 +2370,16 @@ components:
           type: string
         status:
           type: string
-          enum: [ACTIVE, PAYMENT_FAILED, PENDING, EXPIRED]
+          enum:
+          - ACTIVE
+          - PAYMENT_FAILED
+          - PENDING
+          - EXPIRED
         paymentStatus:
           type: string
-          enum: [SUCCESS, FAILED]
+          enum:
+          - SUCCESS
+          - FAILED
         promotionFee:
           $ref: '#/components/schemas/Amount'
         startDate:
@@ -2338,7 +2390,6 @@ components:
           format: date-time
         message:
           type: string
-
     SellerProduct:
       type: object
       properties:
@@ -2350,21 +2401,377 @@ components:
           $ref: '#/components/schemas/Amount'
         sellingFormat:
           type: string
-          enum: [BUY_IT_NOW, AUCTION, CLASSIFIED_AD]
+          enum:
+          - BUY_IT_NOW
+          - AUCTION
+          - CLASSIFIED_AD
         listingStatus:
           type: string
-          enum: [ACTIVE, ENDED, DRAFT]
+          enum:
+          - ACTIVE
+          - ENDED
+          - DRAFT
         image:
           $ref: '#/components/schemas/Image'
         promotionEligible:
           type: boolean
-
     ProductList:
       allOf:
-        - $ref: '#/components/schemas/PaginationInfo'
-        - type: object
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          products:
+            type: array
+            items:
+              $ref: '#/components/schemas/SellerProduct'
+    UpdateItemRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          $ref: '#/components/schemas/Amount'
+        quantity:
+          type: integer
+          minimum: 0
+        condition:
+          type: string
+          enum:
+          - NEW
+          - LIKE_NEW
+          - VERY_GOOD
+          - GOOD
+          - ACCEPTABLE
+          - FOR_PARTS
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        listingStatus:
+          type: string
+          enum:
+          - ACTIVE
+          - PAUSED
+          - ENDED
+    ListingStatusResponse:
+      type: object
+      properties:
+        itemId:
+          type: string
+        listingStatus:
+          type: string
+          enum:
+          - ACTIVE
+          - PAUSED
+          - ENDED
+        updatedAt:
+          type: string
+          format: date-time
+    ShipmentUpdateRequest:
+      type: object
+      required:
+      - carrier
+      - trackingNumber
+      - shippedDate
+      properties:
+        carrier:
+          type: string
+        trackingNumber:
+          type: string
+        shippedDate:
+          type: string
+          format: date-time
+        estimatedDeliveryDate:
+          type: string
+          format: date-time
+    ShipmentUpdateResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+        shipmentStatus:
+          type: string
+          enum:
+          - SHIPPED
+          - IN_TRANSIT
+        carrier:
+          type: string
+        trackingNumber:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    CheckoutSessionResponse:
+      type: object
+      properties:
+        checkoutSessionId:
+          type: string
+        itemId:
+          type: string
+        quantity:
+          type: integer
+        checkoutSessionStatus:
+          type: string
+          enum:
+          - INITIATED
+          - READY_TO_PAY
+          - EXPIRED
+          - COMPLETED
+        pricingSummary:
+          $ref: '#/components/schemas/Amount'
+        expirationDate:
+          type: string
+          format: date-time
+    ShippingMethodsResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+        shippingMethods:
+          type: array
+          items:
+            type: object
+            properties:
+              shippingServiceCode:
+                type: string
+              carrier:
+                type: string
+              cost:
+                $ref: '#/components/schemas/Amount'
+              estimatedDeliveryDate:
+                type: string
+                format: date-time
+              isDefault:
+                type: boolean
+    CreateShippingLabelRequest:
+      type: object
+      required:
+      - orderId
+      - shippingServiceCode
+      properties:
+        orderId:
+          type: string
+        shippingServiceCode:
+          type: string
+        shipperAddress:
+          $ref: '#/components/schemas/Address'
+        recipientAddress:
+          $ref: '#/components/schemas/Address'
+        weight:
+          type: object
           properties:
-            products:
-              type: array
-              items:
-                $ref: '#/components/schemas/SellerProduct'
+            value:
+              type: number
+            unit:
+              type: string
+    ShippingLabelResponse:
+      type: object
+      properties:
+        labelId:
+          type: string
+        orderId:
+          type: string
+        trackingNumber:
+          type: string
+        carrier:
+          type: string
+        labelUrl:
+          type: string
+          format: uri
+        cost:
+          $ref: '#/components/schemas/Amount'
+        createdAt:
+          type: string
+          format: date-time
+    ConversationListResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          conversations:
+            type: array
+            items:
+              type: object
+              properties:
+                conversationId:
+                  type: string
+                otherUserName:
+                  type: string
+                itemId:
+                  type: string
+                lastMessageTime:
+                  type: string
+                  format: date-time
+                unreadMessageCount:
+                  type: integer
+    ConversationResponse:
+      type: object
+      properties:
+        conversationId:
+          type: string
+        itemId:
+          type: string
+        otherParty:
+          type: object
+          properties:
+            userId:
+              type: string
+            userName:
+              type: string
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              messageId:
+                type: string
+              senderId:
+                type: string
+              text:
+                type: string
+              sentAt:
+                type: string
+                format: date-time
+    SendMessageRequest:
+      type: object
+      required:
+      - conversationId
+      - text
+      properties:
+        conversationId:
+          type: string
+        text:
+          type: string
+    MessageResponse:
+      type: object
+      properties:
+        messageId:
+          type: string
+        conversationId:
+          type: string
+        text:
+          type: string
+        sentAt:
+          type: string
+          format: date-time
+    CreateClassifiedListingRequest:
+      type: object
+      required:
+      - title
+      - currentPrice
+      - categoryId
+      - condition
+      properties:
+        title:
+          type: string
+        currentPrice:
+          $ref: '#/components/schemas/Amount'
+        categoryId:
+          type: string
+        condition:
+          type: string
+          enum:
+          - NEW
+          - LIKE_NEW
+          - VERY_GOOD
+          - GOOD
+          - ACCEPTABLE
+          - FOR_PARTS
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        contactInfo:
+          type: object
+          properties:
+            phone:
+              type: string
+            email:
+              type: string
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+    ClassifiedListingResponse:
+      type: object
+      properties:
+        classifiedAdId:
+          type: string
+        title:
+          type: string
+        currentPrice:
+          $ref: '#/components/schemas/Amount'
+        categoryId:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - PAUSED
+          - ENDED
+        interestedBuyersCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    ClassifiedListingListResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          classifiedListings:
+            type: array
+            items:
+              $ref: '#/components/schemas/ClassifiedListingResponse'
+    InterestedBuyersResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaginationInfo'
+      - type: object
+        properties:
+          interestedBuyers:
+            type: array
+            items:
+              type: object
+              properties:
+                buyerId:
+                  type: string
+                buyerUserName:
+                  type: string
+                interestedAt:
+                  type: string
+                  format: date-time
+                feedbackScore:
+                  type: integer
+    ContactBuyerRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        initiateOfferNegotiation:
+          type: boolean
+    Address:
+      type: object
+      properties:
+        fullName:
+          type: string
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        stateOrProvince:
+          type: string
+        postalCode:
+          type: string
+        countryCode:
+          type: string
