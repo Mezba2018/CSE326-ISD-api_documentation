@@ -4,7 +4,7 @@ info:
   version: 1.0.0
 servers:
 - url: https://ISD-Ka-Ye-Dukh-Kahe-Khatam-Nahi-Hota.com
-- url: https://api.sandbox.ebay.com
+- url: https://ebay.com
 tags:
 - name: Browse & Search
 - name: Checkout & Orders (Buyer)
