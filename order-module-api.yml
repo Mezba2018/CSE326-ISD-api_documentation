@@ -3,7 +3,7 @@ info:
   title: eBay Marketplace API
   version: 1.0.0
 servers:
-- url: https://api.ebay.com
+- url: https://ISD-Ka-Ye-Dukh-Kahe-Khatam-Nahi-Hota.com
 - url: https://api.sandbox.ebay.com
 tags:
 - name: Browse & Search
