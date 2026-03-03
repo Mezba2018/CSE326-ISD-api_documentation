@@ -16,8 +16,8 @@ tags:
 - name: Order Fulfillment (Seller)
 - name: Promotions & Marketing
 - name: Shipping & Logistics
-- name: Messaging
 - name: Classified Ads
+- name: Messaging
 security:
 - OAuth2:
   - https://api.ebay.com/oauth/api_scope
@@ -2340,9 +2340,13 @@ components:
           type: string
           enum:
           - STANDARD
-          - CLASSIFIED_AD
           - FEATURED
           - BOLD_TITLE
+        pictures:
+          type: array
+          items:
+            type: string
+            format: uri
         promotionDuration:
           type: string
           enum:
