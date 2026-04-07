@@ -22,7 +22,7 @@ security:
 - OAuth2:
   - https://api.ebay.com/oauth/api_scope
 paths:
-  /buy/browse/v1/item_summary/search:
+  /buy/v1/browse/item_summary/search:
     get:
       tags:
       - Browse & Search
@@ -66,7 +66,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
-  /buy/browse/v1/item/{itemId}:
+  /buy/v1/browse/item/{itemId}:
     get:
       tags:
       - Browse & Search
@@ -91,7 +91,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
-  /buy/order/v1/checkout_session/initiate:
+  /buy/v1/order/checkout_session/initiate:
     post:
       tags:
       - Checkout & Orders (Buyer)
@@ -132,7 +132,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
-  /buy/order/v1/checkout_session/{checkoutSessionId}:
+  /buy/v1/order/checkout_session/{checkoutSessionId}:
     get:
       tags:
       - Checkout & Orders (Buyer)
@@ -157,7 +157,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /buy/order/v1/checkout_session/{checkoutSessionId}/place_order:
+  /buy/v1/order/checkout_session/{checkoutSessionId}/place_order:
     post:
       tags:
       - Checkout & Orders (Buyer)
@@ -186,7 +186,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /buy/offer/v1_beta/bidding/{itemId}:
+  /buy/v1/offer/bidding/{itemId}:
     get:
       tags:
       - Auctions
@@ -211,7 +211,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /buy/offer/v1_beta/bidding/{itemId}/place_proxy_bid:
+  /buy/v1/offer/bidding/{itemId}/place_proxy_bid:
     post:
       tags:
       - Auctions
@@ -248,7 +248,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /buy/offer/v1_beta/bidding/{itemId}/bids:
+  /buy/v1/offer/bidding/{itemId}/bids:
     get:
       tags:
       - Auctions
@@ -273,7 +273,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/inventory/v1/auction/{itemId}/end:
+  /sell/v1/inventory/auction/{itemId}/end:
     post:
       tags:
       - Auctions
@@ -302,7 +302,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/negotiation/v1/offer/{offerId}/send_second_chance_offer:
+  /sell/v1/negotiation/offer/{offerId}/send_second_chance_offer:
     post:
       tags:
       - Auctions
@@ -333,7 +333,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /buy/offer/v1_beta/offer/{itemId}/make_offer:
+  /buy/v1/offer/offer/{itemId}/make_offer:
     post:
       tags:
       - Offers & Negotiation
@@ -366,7 +366,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/negotiation/v1/offer/{offerId}/respond:
+  /sell/v1/negotiation/offer/{offerId}/respond:
     post:
       tags:
       - Offers & Negotiation
@@ -403,7 +403,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /buy/offer/v1_beta/offer/{offerId}:
+  /buy/v1/offer/offer/{offerId}:
     get:
       tags:
       - Offers & Negotiation
@@ -432,7 +432,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /commerce/payment/v1/payment:
+  /commerce/v1/payment/payment:
     post:
       tags:
       - Payments & Refunds
@@ -467,7 +467,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /commerce/payment/v1/payment/{paymentId}:
+  /commerce/v1/payment/payment/{paymentId}:
     get:
       tags:
       - Payments & Refunds
@@ -496,7 +496,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /commerce/refund/v1/refund:
+  /commerce/v1/refund/refund:
     post:
       tags:
       - Payments & Refunds
@@ -531,7 +531,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /post-order/v2/return:
+  /post-order/v1/return:
     post:
       tags:
       - Returns & Post-Order
@@ -560,7 +560,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /post-order/v2/return/search:
+  /post-order/v1/return/search:
     get:
       tags:
       - Returns & Post-Order
@@ -604,7 +604,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /post-order/v2/return/{returnId}:
+  /post-order/v1/return/{returnId}:
     get:
       tags:
       - Returns & Post-Order
@@ -633,7 +633,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /post-order/v2/return/{returnId}/approve:
+  /post-order/v1/return/{returnId}/approve:
     post:
       tags:
       - Returns & Post-Order
@@ -668,7 +668,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /post-order/v2/return/{returnId}/decline:
+  /post-order/v1/return/{returnId}/decline:
     post:
       tags:
       - Returns & Post-Order
@@ -703,7 +703,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/inventory/v1/inventory_item:
+  /sell/v1/inventory/inventory_item:
     post:
       tags:
       - Inventory Management
@@ -732,7 +732,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
-  /sell/inventory/v1/inventory_item/{sku}:
+  /sell/v1/inventory/inventory_item/{sku}:
     get:
       tags:
       - Inventory Management
@@ -817,7 +817,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/fulfillment/v1/order:
+  /sell/v1/fulfillment/order:
     get:
       tags:
       - Order Fulfillment (Seller)
@@ -845,7 +845,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/fulfillment/v1/order/{orderId}:
+  /sell/v1/fulfillment/order/{orderId}:
     get:
       tags:
       - Order Fulfillment (Seller)
@@ -874,7 +874,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/fulfillment/v1/order/{orderId}/shipping_fulfillment:
+  /sell/v1/fulfillment/order/{orderId}/shipping_fulfillment:
     post:
       tags:
       - Order Fulfillment (Seller)
@@ -913,7 +913,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/marketing/v1/ad/{itemId}/promote:
+  /sell/v1/marketing/ad/{itemId}/promote:
     post:
       tags:
       - Promotions & Marketing
@@ -950,7 +950,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/marketing/v1/ad:
+  /sell/v1/marketing/ad:
     get:
       tags:
       - Promotions & Marketing
@@ -974,7 +974,7 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /commerce/shipping/v1/shipping_quote/{orderId}:
+  /commerce/v1/shipping/shipping_quote/{orderId}:
     get:
       tags:
       - Shipping & Logistics
@@ -999,7 +999,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /commerce/shipping/v1/shipping_label:
+  /commerce/v1/shipping/shipping_label:
     post:
       tags:
       - Shipping & Logistics
@@ -1024,7 +1024,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /commerce/shipping/v1/shipping_label/{labelId}:
+  /commerce/v1/shipping/shipping_label/{labelId}:
     get:
       tags:
       - Shipping & Logistics
@@ -1121,7 +1121,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/classified_ads/v1/classified_ad:
+  /sell/v1/classified_ads/classified_ad:
     post:
       tags:
       - Classified Ads
@@ -1165,7 +1165,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/classified_ads/v1/classified_ad/{classifiedAdId}:
+  /sell/v1/classified_ads/classified_ad/{classifiedAdId}:
     get:
       tags:
       - Classified Ads
@@ -1190,7 +1190,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/classified_ads/v1/classified_ad/{classifiedAdId}/interested_buyers:
+  /sell/v1/classified_ads/classified_ad/{classifiedAdId}/interested_buyers:
     get:
       tags:
       - Classified Ads
@@ -1217,7 +1217,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /sell/classified_ads/v1/classified_ad/{classifiedAdId}/buyer_interest/{buyerId}:
+  /sell/v1/classified_ads/classified_ad/{classifiedAdId}/buyer_interest/{buyerId}:
     post:
       tags:
       - Classified Ads
